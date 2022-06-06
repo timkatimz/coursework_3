@@ -1,0 +1,11 @@
+import base64
+
+TOKEN_EXPIRE_MINUTES = 15
+TOKEN_EXPIRE_DAYS = 130
+SECRET_KEY = "you-will-never-guess"
+ALGORITHM = "HS256"
+
+ITEMS_PER_PAGE = 12
+
+PWD_HASH_SALT = base64.b64decode("salt")
+PWD_HASH_ITERATIONS = 100_000

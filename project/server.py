@@ -3,23 +3,24 @@ from flask_cors import CORS
 from flask_restx import Api
 
 from project.setup_db import db
-from project.views.director import director_ns
-from project.views.movies import movie_ns
+from project.views.user import auth_ns
+from project.views.director import directors_ns
+from project.views.movies import movies_ns
 from project.views.genres import genres_ns
 
-api = Api()
-#     authorizations={
-#         "Bearer": {"type": "apiKey", "in": "header", "name": "Authorization"}
-#     },
-#     title="Flask Course Project 4",
-#     doc="/docs",
-# )
-
-# Нужно для работы с фронтендом
-# cors = CORS()
+api = Api(
+    authorizations={
+        "Bearer": {"type": "apiKey", "in": "header", "name": "Authorization"}
+    },
+    title="Flask Course Project 4",
+    doc="/docs",
+)
 
 
-def create_app(config_obj, genre_ns=None):
+cors = CORS()
+
+
+def create_app(config_obj):
     app = Flask(__name__)
     app.config.from_object(config_obj)
 
@@ -32,10 +33,10 @@ def create_app(config_obj, genre_ns=None):
     api.init_app(app)
 
     # Register end-points
-    api.add_namespace(movie_ns)
-    api.add_namespace(director_ns)
+    api.add_namespace(movies_ns)
+    api.add_namespace(directors_ns)
     api.add_namespace(genres_ns)
-    # api.add_namespace(auth_ns)
+    api.add_namespace(auth_ns)
     # api.add_namespace(user_ns)
 
     return app

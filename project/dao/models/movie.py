@@ -1,10 +1,10 @@
-from project.dao.models.base import BaseMixin
 from project.setup_db import db
 
 
-class Movie(BaseMixin, db.Model):
+class Movie(db.Model):
     __tablename__ = "movies"
 
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.Text(), nullable=False)
     description = db.Column(db.Text(), nullable=False)
     trailer = db.Column(db.Text(), nullable=False)
