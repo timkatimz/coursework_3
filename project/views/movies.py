@@ -18,7 +18,7 @@ class MoviesView(Resource):
 
 
 
-@movies_ns.route("/<int:mid>")
+@movies_ns.route("/<int:mid>/")
 class MovieView(Resource):
     @movies_ns.response(200, "OK")
     @movies_ns.response(404, "Movie not found")

@@ -3,10 +3,11 @@ from flask_cors import CORS
 from flask_restx import Api
 
 from project.setup_db import db
-from project.views.user import auth_ns
+from project.views.auth import auth_ns
 from project.views.director import directors_ns
 from project.views.movies import movies_ns
 from project.views.genres import genres_ns
+from project.views.user import user_ns
 
 api = Api(
     authorizations={
@@ -15,7 +16,6 @@ api = Api(
     title="Flask Course Project 4",
     doc="/docs",
 )
-
 
 cors = CORS()
 
@@ -28,7 +28,6 @@ def create_app(config_obj):
     def index():
         return render_template("index.html")
 
-    # cors.init_app(app)
     db.init_app(app)
     api.init_app(app)
 
@@ -37,6 +36,6 @@ def create_app(config_obj):
     api.add_namespace(directors_ns)
     api.add_namespace(genres_ns)
     api.add_namespace(auth_ns)
-    # api.add_namespace(user_ns)
+    api.add_namespace(user_ns)
 
     return app

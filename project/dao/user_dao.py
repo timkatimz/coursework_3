@@ -6,12 +6,14 @@ class UserDAO:
     def __init__(self, session):
         self.session = session
 
-    def create(self, login_data):
-        new_user = User(**login_data)
-        self.session.add(new_user)
-        self.session.commit()
-
-    def get_one(self, email):
-        user = self.session.query(User).filter(User.email == email).first()
+    def get_user_profile(self, email):
+        user = self.session.query(User).filter(User.email == email).one()
         return user
 
+    def update_user_profile(self, user):
+        self.session.add(user)
+        self.session.commit()
+
+    def update_user_password(self, user):
+        self.session.add(user)
+        self.session.commit()

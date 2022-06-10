@@ -1,10 +1,7 @@
-import calendar
-import datetime
-
 import jwt
 from flask_restx import abort
 
-from constants import SECRET_KEY, TOKEN_EXPIRE_MINUTES, ALGORITHM, TOKEN_EXPIRE_DAYS
+from constants import SECRET_KEY, ALGORITHM
 from project.tools.security import generate_password_digest
 
 
@@ -13,62 +10,33 @@ class UserService:
     def __init__(self, dao):
         self.dao = dao
 
-    def create(self, data):
-        email = data["email"]
-        open_password = data["password"]
+    def get_profile(self, jwt_token):
+        return self.get_user_by_email(jwt_token)
 
-        password = generate_password_digest(open_password)
-        login_data = {"email": email, "password": password}
+    def update_profile(self, jwt_token, user_data):
+        user = self.get_user_by_email(jwt_token)
 
-        return self.dao.create(login_data)
+        user.name = user_data.get("name", None)
+        user.surname = user_data.get("surname", None)
+        user.favourite_genre = user_data.get("favourite_genre", None)
 
-    def check_login_data(self, data):
-        email = data["email"]
-        open_password = data["password"]
-        user = self.dao.get_one(email)
-        if not user:
-            abort(401)
+        return self.dao.update_user_profile(user)
 
-        password = generate_password_digest(open_password)
-        if user.password != password:
-            abort(401)
+    def update_password(self, jwt_token, passwords):
+        user = self.get_user_by_email(jwt_token)
 
-        try:
-            min15 = datetime.datetime.utcnow() + datetime.timedelta(minutes=TOKEN_EXPIRE_MINUTES)
-            data["exp"] = calendar.timegm(min15.timetuple())
-            access_token = jwt.encode(data,
-                                      key=SECRET_KEY, algorithm=ALGORITHM)
-            days130 = datetime.datetime.utcnow() + datetime.timedelta(days=TOKEN_EXPIRE_DAYS)
-            data["exp"] = calendar.timegm(days130.timetuple())
-            refresh_token = jwt.encode(data,
-                                       key=SECRET_KEY, algorithm=ALGORITHM)
-            tokens = {"access_token": access_token, "refresh_token": refresh_token}
-        except jwt.PyJWTError as e:
-            return f"{e}"
-        return tokens
+        old_password = generate_password_digest(passwords["old_password"])
+        if user.password != old_password:
+            abort(401, "Incorrect password")
+        new_password = generate_password_digest(passwords["new_password"])
 
-    def check_tokens(self, data):
-        refresh_token = data["refresh_token"]
-        if not refresh_token:
-            abort(400)
-        try:
-            jwt.decode(jwt=refresh_token, key=SECRET_KEY, algorithms=[ALGORITHM])
-        except jwt.DecodeError as e:
-            return f"{e}"
+        user.password = new_password
 
-        try:
-            min15 = datetime.datetime.utcnow() + datetime.timedelta(minutes=TOKEN_EXPIRE_MINUTES)
-            data["exp"] = calendar.timegm(min15.timetuple())
-            access_token = jwt.encode(data,
-                                      key=SECRET_KEY, algorithm=ALGORITHM)
+        return self.dao.update_user_password(user)
 
-            days130 = datetime.datetime.utcnow() + datetime.timedelta(days=TOKEN_EXPIRE_DAYS)
-            data["exp"] = calendar.timegm(days130.timetuple())
-            refresh_token = jwt.encode(data,
-                                       key=SECRET_KEY, algorithm=ALGORITHM)
-            tokens = {"access_token": access_token, "refresh_token": refresh_token}
-        except jwt.PyJWTError as e:
-            return f"{e}"
-        return tokens
-
-
+    def get_user_by_email(self, jwt_token):
+        token = jwt_token.split("Bearer ")[-1]
+        user = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = user.get("email")
+        user = self.dao.get_user_profile(email)
+        return user
