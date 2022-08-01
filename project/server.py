@@ -1,5 +1,4 @@
 from flask import Flask, render_template
-from flask_cors import CORS
 from flask_restx import Api
 
 from project.setup_db import db
@@ -16,8 +15,6 @@ api = Api(
     title="Flask Course Project 4",
     doc="/docs",
 )
-
-cors = CORS()
 
 
 def create_app(config_obj):
